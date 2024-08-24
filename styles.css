@@ -1,0 +1,141 @@
+/* Center the graphic container */
+#container {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center-align all elements horizontally */
+    justify-content: center; /* Center-align all elements vertically */
+    gap: 20px; /* Space between each section */
+    min-height: 100vh; /* Full viewport height to center vertically */
+    text-align: center; /* Centers text and inline elements */
+}
+
+/* Set the background color for the entire page */
+body {
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 16pt;
+    margin: 0;
+    padding: 0;
+}
+
+/* Style for the control section */
+.controls {
+    margin-bottom: 20px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Ensure that labels and dropdowns are visible on the dark background */
+.controls label,
+.controls select {
+    color: white;
+}
+
+/* Style the dropdown menus */
+.controls select {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 5px;
+}
+
+.x-axis text,
+.y-axis text {
+    fill: white;
+}
+
+.x-axis path,
+.x-axis line,
+.y-axis path,
+.y-axis line {
+    stroke: white;
+}
+
+svg {
+    border: 0px solid #ccc;
+}
+
+.x-axis text,
+.y-axis text {
+    font-size: 16px; 
+    font-family: Arial, sans-serif;
+    fill: white; 
+}
+
+.axis-title {
+    font-size: 18px; /* Adjust font size for axis titles */
+    fill: white;
+    text-anchor: middle;
+}
+
+#tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    pointer-events: none; /* Prevent tooltip from interfering with mouse events */
+    font-size: 14px;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.2s ease; /* Smooth fade-in */
+}
+
+text {
+    fill: white;
+}
+
+#legend-container {
+    display: flex;
+    justify-content: center; /* Centers the legend horizontally */
+    align-items: center; /* Centers the legend vertically */
+    width: 100%; /* Takes the full width of the parent container */
+    margin: 10px 0;
+}
+
+#legend {
+    width: 100%;
+    max-width: 450px;
+    flex-shrink: 0;
+    display: flex; /* Use flexbox to align items horizontally */
+    justify-content: center;
+    align-items: center; /* Vertically center the legend items */
+    gap: 30px; /* Controls spacing between legend items */
+}
+
+/* Legend items container */
+.legend-items {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Individual legend item */
+.legend-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 20px;
+    text-align: center;
+}
+
+.legend-item:last-child {
+    margin-right: 0;
+}
+
+.legend-item text {
+    font-size: 16px; /* Adjust the font size here */
+    fill: white; /* Keeps the text color white, change if needed */
+}
+/* SVG container for the scatterplot */
+#chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
