@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Loaded Data:", data); // Check if data is loaded correctly
 
         // Run both visualizations after defining them
-        //averageScoreVisualization(data); 
+        averageScoreVisualization(data); 
         scatterPlotVisualization(data);
     });
 
