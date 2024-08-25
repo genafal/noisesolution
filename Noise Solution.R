@@ -17,7 +17,9 @@ packages_required <- c("tidyverse",   ## List of required packages
                        "readr",
                        "stringr",
                        "janitor", # rename columns to snake case
-                       "corrplot") # build correlation visualization
+                       "corrplot", # build correlation visualization
+                       "sf",
+                       "lwgeom") # GeoJSON
 
 new_packages <- packages_required[!(packages_required %in% installed.packages()[,"Package"])] ## List of packages to be installed
 
@@ -127,18 +129,35 @@ data_with_latlongs_areas_regions <- data_with_latlongs_areas_regions %>% # has_e
     external_members == 0 ~ "No"
   ))
 
+# NEW COLUMN
+data_with_latlongs_areas_regions <- data_with_latlongs_areas_regions %>% # change_reported
+  mutate(change_reported = case_when(
+    score_change > 0 ~ "Positive",
+    score_change == 0 ~ "No change",
+    score_change < 0 ~ "Negative"
+  ))
+
+# NEW COLUMN
+data_with_latlongs_areas_regions <- data_with_latlongs_areas_regions %>% # size_of_change
+  mutate(size_of_change = abs(score_change))
+
+
+
 data_for_d3 <- data_with_latlongs_areas_regions %>% # prep data frame for use in D3
   select(uin,
          account_unique_id,
          postcode,
-         postcode_area_name,
          outcode_alpha,
+         postcode_area_name,
          region,
          swemwbs_start_age,
          age_group,
          gender_clean,
          ethnicity_clean,
+         participant_industry,
          has_external_interaction,
+         change_reported,
+         size_of_change,
          external_members,
          posts,
          comments,
@@ -361,6 +380,52 @@ corrplot(cor_matrix, method = "circle", type = "lower")
 
 # Fit the model
 model <- lm(score_change ~ swemwbs_start_age + comments + likes + posts + external_members, data)
+
+
+# GeoJSON ----
+
+install.packages("sf", dependencies = FALSE)
+
+
+# Set the directory containing your GeoJSON files
+geojson_dir <- "/Users/georgenafalzon/Documents/DATASETS/Noise Solution/geojson"
+
+# List all GeoJSON files in the directory
+geojson_files <- list.files(geojson_dir, pattern = "\\.geojson$", full.names = TRUE)
+
+# Function to read GeoJSON files and align columns
+read_and_align <- function(file) {
+  gdf <- st_read(file, quiet = TRUE)
+  
+  # List the columns that should be present
+  all_columns <- c("area", "mapit_code")  # Add more columns as needed
+  
+  # Add missing columns with NA values
+  for (col in all_columns) {
+    if (!col %in% colnames(gdf)) {
+      gdf[[col]] <- NA
+    }
+  }
+  
+  # Ensure consistent column order
+  gdf <- gdf[, all_columns, drop = FALSE]
+  
+  return(gdf)
+}
+
+# Read and combine all GeoJSON files into a single sf object
+combined_geojson <- do.call(rbind, lapply(geojson_files, read_and_align)) %>%
+  rename(outcode_alpha = area)
+
+combined_geojson <- st_make_valid(combined_geojson)
+
+
+
+# Write to file
+st_write(combined_geojson, "uk_outcode_regions.geojson", driver = "GeoJSON", delete_dsn = TRUE)
+
+names(combined_geojson)
+
 
 
 
