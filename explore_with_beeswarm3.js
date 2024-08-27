@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .attr("r", 5)
-            .attr("fill", "steelblue")
+            .attr("fill", "#513399")
             .attr("opacity", 0.7)
             .append("title")
             .text(d => `Age Group: ${d.age_group}\nAverage Score Change: ${d.score_change}`);

@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Initialize the color scale after calculating the domain
             const colorScale = d3.scaleDiverging()
                 .domain([minScore, 0, maxScore])
-                .interpolator(d3.interpolateRgbBasis(["#8755ff", "#E1E1E1", "#beff00"]));
+                .interpolator(d3.interpolateRgbBasis(["#8755FF", "#E1E1E1", "#beff00"]));
 
             // Log values to verify correct initialization (AFTER colorScale is defined)
             geojsonData.features.forEach(feature => {

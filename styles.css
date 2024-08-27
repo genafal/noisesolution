@@ -8,6 +8,8 @@
     gap: 20px; /* Space between each section */
     min-height: 100vh; /* Full viewport height to center vertically */
     text-align: center; /* Centers text and inline elements */
+    padding: 0;
+    margin: 0;
 }
 
 body {
@@ -20,6 +22,7 @@ body {
     padding: 0;
     align-items: center;
     justify-content: center;
+    min-height: 100vh;
 }
 
 /* General text elements */
@@ -28,16 +31,36 @@ h1, p, label, select, #result, #avg-score, .controls label, .controls select, .x
 }
 
 h1 {
-    font-family: 'Montserrat', sans-serif;
     font-weight: 700; /* Bold */
     font-size: 2rem;
     margin-bottom: 20px;
 }
 
+li {
+    margin: 10px 0;
+}
+
+a {
+    text-decoration: none;
+    font-size: 1.2em;
+    color: #a371f7;
+    padding: 10px 20px;
+    display: inline-block;
+}
+
+a:hover {
+    color: #e1e1e1;
+}
+
+
 label, select {
-    font-family: 'Montserrat', sans-serif;
     font-size: 1rem;
     margin: 0 10px;
+}
+
+select {
+    padding: 5px;
+    
 }
 
 #result {

@@ -150,7 +150,8 @@ document.addEventListener("DOMContentLoaded", function () {
         let yScale = d3.scaleBand().range([height, 0]).padding(0.1);
         const colorScale = d3.scaleOrdinal()
             .domain(["Positive", "No change", "Negative"])
-            .range(["#beff00", "#8755ff", "#0c79d5"]);
+            .range(["#beff00", "#4F9DE0", "#6C44CC"]);
+            //.range(["#beff00", "#0c79d5", "#8755ff"]);
         const sizeScale = d3.scaleLinear().range([2, 10]); // Scale for circle sizes
 
         // Add a color legend based on the change_reported column
