@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to highlight a specific point in the beeswarm plot
     function highlightPointInBeeswarm(matchingPoint) {
+
         // Reset any previous highlights
         d3.selectAll("circle").attr("stroke", null).attr("r", 5); // Reset stroke and radius
 
