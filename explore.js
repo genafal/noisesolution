@@ -4,9 +4,18 @@ document.addEventListener("DOMContentLoaded", function () {
     d3.csv("data.csv").then(function (data) {
         console.log("Loaded Data:", data); // Check if data is loaded correctly
 
-        // Run both visualizations after defining them
+        // Run visualization after defining it
         averageScoreVisualization(data); 
-        scatterPlotVisualization(data);
+
+        // Calculate and display the highest average score change
+        calculateHighestAverageScoreChange(data);
+
+        // Calculate and display the lowest average score change
+        calculateLowestAverageScoreChange(data);
+
+        // Group data by age group for the beeswarm plot
+        plotBeeswarm(data);
+
     });
 
     // Define custom orders for each axis category
@@ -23,13 +32,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const tooltip = d3.select("#tooltip");
 
     // Function for the average score visualization
-    
     function averageScoreVisualization(data) {
+
         // Extract unique values for dropdowns
-        const ageGroups = [...new Set(data.map(d => d.age_group))];
-        const locations = [...new Set(data.map(d => d.location))];
-        const ethnicities = [...new Set(data.map(d => d.ethnicity))];
-        const genders = [...new Set(data.map(d => d.gender))];
+        const ageGroups = [...new Set(data.map(d => d.age_group))].sort((a, b) => orders.age_group.indexOf(a) - orders.age_group.indexOf(b));
+        const locations = [...new Set(data.map(d => d.location))].sort((a, b) => orders.location.indexOf(a) - orders.location.indexOf(b));
+        const ethnicities = [...new Set(data.map(d => d.ethnicity))].sort((a, b) => orders.ethnicity.indexOf(a) - orders.ethnicity.indexOf(b));
+        const genders = [...new Set(data.map(d => d.gender))].sort((a, b) => orders.gender.indexOf(a) - orders.gender.indexOf(b));
 
         // Log the unique values for debugging
         console.log("Age Groups:", ageGroups);
@@ -70,6 +79,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .text(d => d)
             .attr("value", d => d);
 
+        // Set default values for dropdowns
+        d3.select("#age-group").property("value", "Age 13-15");
+        d3.select("#location").property("value", "Ipswich");
+        d3.select("#ethnicity").property("value", "White");
+        d3.select("#gender").property("value", "Male");
+
         function updateAverageScore() {
             const selectedAgeGroup = d3.select("#age-group").property("value");
             const selectedLocation = d3.select("#location").property("value");
@@ -94,6 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const avgScoreChange = d3.mean(filteredData, d => d.score_change);
             d3.select("#avg-score").text(avgScoreChange ? avgScoreChange.toFixed(2) : "No data");
+        
+            
         }
 
         d3.selectAll("select").on("change", updateAverageScore);
@@ -101,167 +118,126 @@ document.addEventListener("DOMContentLoaded", function () {
         updateAverageScore();
     } 
 
-    // Function for the scatter plot visualization
-    function scatterPlotVisualization(data) {
-        const xAxisDropdown = d3.select("#x-axis").node();
-        const yAxisDropdown = d3.select("#y-axis").node();
+    // Function to calculate and display the highest average score change
+    function calculateHighestAverageScoreChange(data) {
+        // Group data by all four factors
+        const groupedData = d3.group(data, d => d.age_group, d => d.location, d => d.ethnicity, d => d.gender);
 
-        if (!xAxisDropdown) {
-            console.error("The #x-axis dropdown is not found.");
-        } else {
-            console.log("X-Axis Dropdown Element:", xAxisDropdown);
-        }
+        let highestAvgScore = -Infinity;
+        let bestCombination = {};
 
-        if (!yAxisDropdown) {
-            console.error("The #y-axis dropdown is not found.");
-        } else {
-            console.log("Y-Axis Dropdown Element:", yAxisDropdown);
-        }
-
-
-        // Set up dimensions and SVG container
-        const svg = d3.select("svg"),
-              margin = { top: 20, right: 30, bottom: 40, left: 150 },
-              width = svg.attr("width") - margin.left - margin.right,
-              height = svg.attr("height") - margin.top - margin.bottom,
-              g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-        // Log the dropdown elements to check if they exist
-        console.log("X-Axis Dropdown:", d3.select("#x-axis").node());
-        console.log("Y-Axis Dropdown:", d3.select("#y-axis").node());
-
-        // Append axis groups within this function
-        g.append("g").attr("class", "x-axis").attr("transform", `translate(0,${height})`);
-        g.append("g").attr("class", "y-axis");
-
-        // Create dropdown options for scatter plot axes
-        const categoricalColumns = ["age_group", "gender", "ethnicity", "location", "participant_industry", "has_external_interaction"];
-
-        categoricalColumns.forEach((col, index) => {
-            console.log("Adding option to dropdowns:", col); // Log each column as it is added
-            d3.select("#x-axis").append("option").text(col).attr("value", col).property("selected", index === 0);
-            d3.select("#y-axis").append("option").text(col).attr("value", col).property("selected", index === 1);
-        });
-
-        let xAxisCategory = d3.select("#x-axis").property("value");
-        let yAxisCategory = d3.select("#y-axis").property("value");
-
-        // Set up scales
-        let xScale = d3.scaleBand().range([0, width]).padding(0.1);
-        let yScale = d3.scaleBand().range([height, 0]).padding(0.1);
-        const colorScale = d3.scaleOrdinal()
-            .domain(["Positive", "No change", "Negative"])
-            .range(["#beff00", "#8755ff", "#0c79d5"]);
-        const sizeScale = d3.scaleLinear().range([2, 10]); // Scale for circle sizes
-
-        // Add a color legend based on the change_reported column
-        const legendData = colorScale.domain(); // ["Positive", "No change", "Negative"]
-        const legend = d3.select("#legend")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", 50) // Adjust height based on the number of legend items
-            .selectAll(".legend-item")
-            .data(legendData)
-            .enter()
-            .append("g")
-            .attr("class", "legend-item")
-            .attr("transform", (d, i) => `translate(${i * 120}, 0)`);
-
-        legend.append("circle")
-            .attr("cx", 9) // Adjust the x position for the circle's center
-            .attr("cy", 19) // Adjust the y position for the circle's center
-            .attr("r", 9) // Set the radius of the circle
-            .attr("fill", d => colorScale(d));
-
-        legend.append("text")
-            .attr("x", 25)
-            .attr("y", 20)
-            .attr("dy", ".35em")
-            .text(d => d)
-            .style("fill", "white"); // Adjust the text color as needed
-
-        function updateScatterPlot() {
-            xAxisCategory = d3.select("#x-axis").property("value");
-            yAxisCategory = d3.select("#y-axis").property("value");
-        
-            // Apply custom order for x-axis and y-axis
-            xScale.domain(orders[xAxisCategory]);
-            yScale.domain(orders[yAxisCategory]);
-            sizeScale.domain([0, d3.max(data, d => d.size_of_change)]);
-
-            // Initialize the force simulation
-            const simulation = d3.forceSimulation(data)
-            .force("x", d3.forceX(d => xScale(d[xAxisCategory]) + xScale.bandwidth() / 2).strength(1))
-            .force("y", d3.forceY(d => yScale(d[yAxisCategory]) + yScale.bandwidth() / 2).strength(1))
-            .force("collide", d3.forceCollide(d => sizeScale(d.size_of_change) + 1)) // Fine-tune the collision radius
-            .stop();
-
-            // Run the simulation for a fixed number of iterations to ensure stability
-            for (let i = 0; i < 300; i++) simulation.tick();
-
-            // Bind data to circles
-            const circles = g.selectAll("circle").data(data);
-        
-            circles.enter().append("circle")
-                .merge(circles)
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y)
-                .attr("r", d => {
-                    const radius = sizeScale(d.size_of_change);
-                    return radius === 0 ? 2 : radius; // Ensure a minimum radius of 2 for size_of_change = 0
-                })
-                .attr("fill", d => colorScale(d.change_reported))
-                .attr("stroke", "#333")
-                .attr("opacity", 0.9)
-                .on("mouseover", function(event, d) {
-                    tooltip.transition().duration(200).style("opacity", 1);
-                    tooltip.html(`
-                    <strong>Size of Change:</strong> ${d.size_of_change}<br>
-                    <strong>Age Group:</strong> ${d.age_group}<br>
-                    <strong>Gender:</strong> ${d.gender}<br>
-                    <strong>Ethnicity:</strong> ${d.ethnicity}<br>
-                    <strong>Industry:</strong> ${d.participant_industry}<br>
-                    <strong>External Interaction:</strong> ${d.has_external_interaction}
-                    `)
-                    .style("left", (event.pageX + 5) + "px")
-                    .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mousemove", function(event) {
-                    tooltip.style("left", (event.pageX + 5) + "px")
-                           .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mouseout", function() {
-                    tooltip.transition().duration(500).style("opacity", 0);
+        // Calculate average score change for each group
+        groupedData.forEach((locationGroup, ageGroup) => {
+            locationGroup.forEach((ethnicityGroup, location) => {
+                ethnicityGroup.forEach((genderGroup, ethnicity) => {
+                    genderGroup.forEach((dataPoints, gender) => {
+                        const avgScore = d3.mean(dataPoints, d => d.score_change);
+                        if (avgScore > highestAvgScore) {
+                            highestAvgScore = avgScore;
+                            bestCombination = { ageGroup, location, ethnicity, gender };
+                        }
+                    });
                 });
-
-            circles.exit().remove();
-        
-            // Update the axis groups after creation
-            if (g.select(".x-axis").node()) {
-                g.select(".x-axis").call(d3.axisBottom(xScale)).attr("transform", `translate(0,${height})`);
-            }
-        
-            if (g.select(".y-axis").node()) {
-                g.select(".y-axis").call(d3.axisLeft(yScale));
-            }
-            
-        }
-        
-
-        // Initial render of the scatter plot
-        updateScatterPlot();
-
-        // Update plot when x-axis or y-axis changes
-        d3.select("#x-axis").on("change", function () {
-            xAxisCategory = this.value;
-            updateScatterPlot();
+            });
         });
 
-        d3.select("#y-axis").on("change", function () {
-            yAxisCategory = this.value;
-            updateScatterPlot();
-        });
+        // Display the highest average score change and the combination that produced it
+        // Display the highest average score change in a sentence
+    d3.select("#highest-avg-score").html(`
+    <p>The highest average score change, <strong>${highestAvgScore.toFixed(2)}</strong>, is observed for ${bestCombination.gender}s, ${bestCombination.ageGroup}, from ${bestCombination.location} (Ethnicity ${bestCombination.ethnicity}).</p>
+    
+        `);
     }
 
+    // Function to calculate and display the lowest average score change
+    function calculateLowestAverageScoreChange(data) {
+        // Group data by all four factors
+        const groupedData = d3.group(data, d => d.age_group, d => d.location, d => d.ethnicity, d => d.gender);
 
+        let lowestAvgScore = Infinity;
+        let worstCombination = {};
+
+        // Calculate average score change for each group
+        groupedData.forEach((locationGroup, ageGroup) => {
+            locationGroup.forEach((ethnicityGroup, location) => {
+                ethnicityGroup.forEach((genderGroup, ethnicity) => {
+                    genderGroup.forEach((dataPoints, gender) => {
+                        const avgScore = d3.mean(dataPoints, d => d.score_change);
+                        if (avgScore < lowestAvgScore) {
+                            lowestAvgScore = avgScore;
+                            worstCombination = { ageGroup, location, ethnicity, gender };
+                        }
+                    });
+                });
+            });
+        });
+
+        // Display the lowest average score change in a sentence
+        d3.select("#lowest-avg-score").html(`
+            <p>The lowest average score change, <strong>${lowestAvgScore.toFixed(2)}</strong>, is observed for ${worstCombination.ageGroup} year-old young people from ${worstCombination.location}. (Ethnicity - ${worstCombination.ethnicity}, Gender - ${worstCombination.gender}).</p>
+        `);
+    }
+
+    function plotBeeswarm(data) {
+        // Define orders for age groups
+        const ageGroupOrder = ["Age 4-9", "Age 10-12", "Age 13-15", "Age 16-19", "Age 20-24", "Age 25+", "Unknown"];
+
+        // Set up SVG dimensions
+        const margin = { top: 20, right: 30, bottom: 50, left: 50 },
+              width = 1000 - margin.left - margin.right,
+              height = 600 - margin.top - margin.bottom;
+
+        const svg = d3.select("#beeswarm-chart-container svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Set up scales
+        const xScale = d3.scalePoint()
+            .domain(ageGroupOrder)
+            .range([0, width])
+            .padding(0.5);
+
+        const yScale = d3.scaleLinear()
+            .domain([d3.min(data, d => +d.score_change), d3.max(data, d => +d.score_change)])
+            .nice()
+            .range([height, 0]);
+
+        // Set up axis
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(xAxis);
+
+        svg.append("g")
+            .call(yAxis);
+
+        // Add the beeswarm points
+        const simulation = d3.forceSimulation(data)
+            .force("x", d3.forceX(d => xScale(d.age_group)).strength(1))
+            .force("y", d3.forceY(d => yScale(+d.score_change)))
+            .force("collide", d3.forceCollide(5)) // Adjust the radius to avoid overlaps
+            .stop();
+
+        for (let i = 0; i < 300; i++) simulation.tick(); // Run the simulation
+
+        svg.append("g")
+            .selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", 5)
+            .attr("fill", "steelblue")
+            .attr("opacity", 0.7)
+            .append("title")
+            .text(d => `Age Group: ${d.age_group}\nScore Change: ${d.score_change}`);
+    }
+    
 });
+
+

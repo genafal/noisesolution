@@ -1,6 +1,7 @@
 /* Center the graphic container */
 #container {
     display: flex;
+    font-family: 'Montserrat', sans-serif;
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center-align all elements horizontally */
     justify-content: center; /* Center-align all elements vertically */
@@ -9,14 +10,45 @@
     text-align: center; /* Centers text and inline elements */
 }
 
-/* Set the background color for the entire page */
 body {
     background-color: black;
     color: white;
-    font-family: Arial, sans-serif;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
     font-size: 16pt;
     margin: 0;
     padding: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+/* General text elements */
+h1, p, label, select, #result, #avg-score, .controls label, .controls select, .x-axis text, .y-axis text, .axis-title, text, #tooltip, .legend-item text {
+    font-family: 'Montserrat', sans-serif;
+}
+
+h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700; /* Bold */
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+label, select {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    margin: 0 10px;
+}
+
+#result {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    margin-top: 20px;
+}
+
+#avg-score {
+    font-weight: 700; /* Bold */
+    color: #beff00;
 }
 
 /* Style for the control section */
@@ -62,7 +94,7 @@ svg {
 .x-axis text,
 .y-axis text {
     font-size: 16px; 
-    font-family: Arial, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     fill: white; 
 }
 
@@ -152,7 +184,7 @@ text {
     position: absolute;
     opacity: 0;
     background-color: black;
-    color: white
+    color: white;
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -163,4 +195,31 @@ text {
 svg {
     width: 100%;
     height: 100%;
+}
+
+.center-text {
+    text-align: center;
+    font-size: 18px;
+    margin: 20px auto; /* Adjust top/bottom and left/right margins */
+    width: 30%; /* This will ensure the div width aligns better with the heading */
+}
+
+/* Center the beeswarm chart container */
+#beeswarm-chart-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Center the SVG within the container */
+#beeswarm-chart-container svg {
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Ensure the SVG is centered */
+svg#average-score-graph {
+    display: block;
+    margin: 0 auto;
 }

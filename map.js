@@ -30,9 +30,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 csvData,
                 v => ({
                     average_score_change: d3.mean(v, d => +d.score_change),
-                    count: v.length, // Count the number of rows for this outcode_alpha
-                    area: v[0].area,
-                    region: v[0].region
+                    count: v.length, // number of participants per region; for use in tooltip
+                    area: v[0].area, // for use in tooltip
+                    region: v[0].region, // for use in tooltip
+                    average_age: d3.mean(v, d => +d.start_age) // for use in tooltip
                 }),
                 d => d.outcode_alpha.trim().toUpperCase()
             );
@@ -50,6 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     feature.properties.count = data.count;
                     feature.properties.area = data.area;
                     feature.properties.region = data.region;
+                    feature.properties.average_age = data.average_age;
                     console.log(outcode_alpha, data.average_score_change, data.count); // Log to verify it's working
                 } else {
                     console.warn(`Missing or undefined 'outcode_alpha' property in feature:`, feature);
@@ -134,9 +136,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (d.properties.count > 0) { // Only show tooltip if count > 0
                         tooltip.style("opacity", 1); // Show the tooltip
                         tooltip.html(`
-                            <strong>Outcode:</strong> ${d.properties.outcode_alpha}<br>
                             <strong>Area:</strong> ${d.properties.area}, ${d.properties.region}<br>
                             <strong>Avg Score Change:</strong> ${d.properties.average_score_change !== null ? d.properties.average_score_change.toFixed(2) : "N/A"}<br>
+                            <strong>Avg Age:</strong> ${d.properties.average_age !== null ? d.properties.average_age.toFixed(2) : "N/A"}<br>
                             <strong>Count:</strong> ${d.properties.count}
                         `)
                         .style("left", (event.pageX + 10) + "px")
