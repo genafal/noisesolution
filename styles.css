@@ -246,3 +246,9 @@ svg#average-score-graph {
     display: block;
     margin: 0 auto;
 }
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
