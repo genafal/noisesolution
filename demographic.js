@@ -1,6 +1,9 @@
 console.log("Script is running");
+
 document.addEventListener("DOMContentLoaded", function () {
+
     console.log("DOM fully loaded and parsed");
+
     d3.csv("data.csv").then(function (data) {
         console.log("Loaded Data:", data); // Check if data is loaded correctly
 

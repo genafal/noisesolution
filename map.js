@@ -1,8 +1,9 @@
-// map.js
-
 document.addEventListener("DOMContentLoaded", function () {
+    
     function createChoroplethMap() {
+        
         Promise.all([
+            
             d3.json("uk_outcode_regions.geojson"), // Load GeoJSON
             d3.csv("data_for_map.csv") // Load CSV data with outcode_alpha and score_change columns
         ]).then(function([geojsonData, csvData]) {
