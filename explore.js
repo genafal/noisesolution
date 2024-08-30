@@ -21,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Define custom orders for each axis category
     const orders = {
         "age_group": ["Age 4-9", "Age 10-12", "Age 13-15", "Age 16-19", "Age 20-24", "Age 25+", "Unknown"],
-        "location": ["St. Albans", "Bath", "Cambridge", "Chelmsford", "Colchester", "Ipswich", "Milton Keynes", "London", "Norwich", "Peterborough", "Romford", "Stevenage"],
+        "location": ["Salisbury", "Bournemouth", "St. Albans", "Bath", "Cambridge", "Chelmsford", "Colchester", "Ipswich", "Milton Keynes", "London", "Norwich", "Peterborough", "Romford", "Stevenage"],
         "ethnicity": ["Asian", "Black", "White", "Mixed", "Declined to say", "Unknown"],
-        "gender": ["Female", "Male", "Other", "Unknown"],
+        "gender": ["Female", "Male", "Other", "Declined to say", "Unknown"],
         "participant_industry": ["Education", "Local Government", "Mental Health", "Other", "Unknown"],
         "has_external_interaction": ["Yes", "No"]
     };
