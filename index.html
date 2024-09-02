@@ -1,24 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noise Solution</title>
-    <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>Noise Solution - Viz for Social Good</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Montserrat, sans-serif;
+            background-color: black;
+            color: white;
+        }
+
+        /*
+        .banner {
+            width: 100%;
+            height: 150px;
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+        }
+        */
+
+        .banner a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.3em;
+        }
+        .banner a:hover {
+            text-decoration: underline;
+        }
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 50px);
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .banner {
+            background-color: black;
+            padding-right: 100px; /* Adjust side padding as needed */
+            padding-left: 50px; /* Adjust side padding as needed */
+            padding-top: 50px;
+            display: flex;
+            align-items: flex-end; /* Align links to the bottom */
+            justify-content: space-between;
+            height: 150px !important; /* Force the height */
+        }
+
+        .banner-left {
+            display: flex;
+            align-items: flex-end; /* Align SVG to the bottom */
+            padding-left: 50px; 
+        }
+
+        .banner-right {
+            display: flex;
+            gap: 20px; /* Space between the links */
+            align-items: flex-end; /* Align links to the bottom */
+        }
+
+        .banner-svg {
+            height: 150px; /* Adjust SVG size as needed */
+        }
+
+
+    </style>
 </head>
-
 <body>
-    <div id="container">
-        <h1>Noise Solution</h1>
-        <p>Select a page to explore:</p>
-        <ul>
-            <li><a href="demographic.html">Participant Demographics</a></li>
-            <li><a href="map.html">Choropleth Map</a></li>
-            <li><a href="explore_with_beeswarm.html">Average SWEMWBS Score Changes</a></li>
-        </ul>
-    </div>
-</body>
 
+    <div class="banner">
+        <div class="banner-left">
+            <img src="Noise Solution Logo_CORE - White and Acid Green Duotone.svg" alt="Logo" class="banner-svg">
+        </div>
+        <div class="banner-right">
+            <a href="map2.html" target="content-frame">Explore by Region</a>
+            <a href="explore_with_beeswarm.html" target="content-frame">Drill Down to Detail</a>
+            <a href="demographicHB.html" target="content-frame">Demographic Breakdown</a>
+        </div>
+    </div>
+
+    <iframe class="iframe-container" name="content-frame" src="map2.html"></iframe>
+
+</body>
 </html>

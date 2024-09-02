@@ -252,3 +252,57 @@ ul {
     padding: 0;
     margin: 20px 0;
 }
+
+/* Axis and Tick Styling */
+.axis line,
+.axis path {
+    stroke: #888; /* Darker grey for axis lines */
+}
+
+.axis text {
+    fill: #888; /* Darker grey for axis labels */
+    font-size: 16px; /* Larger font size for axis labels */
+    font-weight: bold; /* Optional: make labels bold */
+}
+
+.tick line {
+    stroke: #888; /* Darker grey for tick lines */
+}
+
+.tick text {
+    fill: #888; /* Darker grey for tick labels */
+    font-size: 14px; /* Larger font size for tick labels */
+}
+
+.banner {
+    width: 100%;
+    background-color: #333;
+    padding: 10px;
+    display: flex;
+    align-items: flex-end; /* Align links to the bottom */
+    justify-content: flex-end; /* Align links to the left */
+    height: 180px; /* Adjust this value to match the height you want */
+    box-sizing: border-box; /* Ensure padding doesn't affect height */
+}
+
+.banner a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 1.2em;
+}
+
+.banner-left {
+    display: flex;
+    align-items: flex-end; /* Align SVG to the bottom */
+}
+
+.banner-right {
+    display: flex;
+    gap: 20px; /* Space between the links */
+    align-items: flex-end; /* Align links to the bottom */
+}
+
+.banner-svg {
+    height: 50px; /* Adjust SVG size as needed */
+}

@@ -2,6 +2,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function createChoroplethMap() {
 
+        // Create a tooltip div that is hidden by default
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("position", "absolute")
+            .style("padding", "8px")
+            .style("background", "rgba(0, 0, 0, 0.7)")
+            .style("color", "white")
+            .style("border-radius", "4px")
+            .style("pointer-events", "none")
+            .style("opacity", 0);
+
         Promise.all([
             d3.json("uk_outcode_regions.geojson"),
             d3.csv("data_for_map.csv")
@@ -82,6 +93,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 .attr("stroke", "#000")
                 .attr("stroke-width", "1.0px")
 
+                // Tooltip events
+                .on("mouseover", function(event, d) {
+                    if (d.properties.count > 0) { // Only show tooltip if count > 0
+                        tooltip.style("opacity", 1); // Show the tooltip immediately
+                        tooltip.html(`
+                            <strong>${d.properties.area}</strong>
+                        `)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                    }
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 10) + "px")
+                           .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltipTimeout = setTimeout(() => {
+                        tooltip.transition().duration(500).style("opacity", 0); // Fade out the tooltip after a delay
+                    }, 100); // Small delay to prevent flicker during quick transitions between features
+                })
+                
                 .on("click", function(event, d) {
                     console.log("Clicked region:", d.properties);  // Debugging: Log clicked region's properties
                     if (d.properties.count > 0) {
@@ -92,7 +124,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         // Update the info-box with the new data
                         d3.select("#info-box").html(`
-                            <p><strong>${count}</strong> participants in <strong>${area}</strong> reported an average SWEMWBS score change of <strong>${averageScoreChange.toFixed(2)}</strong>.</p>
+                            <p><strong>${area}</strong><br><br>
+                            <strong>${count}</strong> participant(s)<br><br>
+                            Average score change: <strong>${averageScoreChange.toFixed(2)}</strong></p>
                         `);
 
                         const ageGroupData = d3.rollups(
@@ -137,7 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function createBarChart(data, selector, globalMax) {
         const width = 600;
-        const height = 400;
+        const height = 250;
         const margin = { top: 20, right: 30, bottom: 70, left: 40 }; // Increased bottom margin
 
 
@@ -158,6 +192,9 @@ document.addEventListener("DOMContentLoaded", function () {
             return { age_group: cat, count: count };
         });
 
+        // Hard code the maximum value for the y-axis
+        const yMaxValue = 250;  // Set this to whatever maximum value you want for the y-axis
+
         const svg = d3.select(selector)
             .html("")
             .append("svg")
@@ -166,15 +203,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
     
-
-        /*
-        const svg = d3.select(selector)
-            .html("")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
-        */
-
         const x = d3.scaleBand()
             .domain(categories)
             .range([0, width])
@@ -182,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Use the global maximum for the y-axis domain
         const y = d3.scaleLinear()
-            .domain([0, globalMax])
+            .domain([0, yMaxValue])
             .nice()
             .range([height, 0]);
 
@@ -210,107 +238,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 .style("text-anchor", "middle")); // Center the labels below the bars
                
     }
-
-    /* STACKED BAR CHARTS
-    function createStackedBarChart(data, selector, title) {
-        const width = 400; // Adjust width as needed
-        const height = 200; // Adjust height as needed
-        const margin = { top: 40, right: 30, bottom: 40, left: 50 };
-    
-        const svg = d3.select(selector)
-            .html("")  // Clear previous content
-            .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-        // Process data for stacking
-        const categories = Object.keys(data[0]).filter(key => key !== "category");
-
-        // Define a custom color scale using the colors from the choropleth map
-        const customColors = ["#8755FF", "#E1E1E1", "#beff00"];
-        const colorScale = d3.scaleOrdinal()
-            .domain(categories)
-            .range(customColors.concat(d3.schemeCategory10));  // Fallback to d3 scheme if more colors are needed
-    
-        const stack = d3.stack()
-            .keys(categories)
-            .order(d3.stackOrderNone)
-            .offset(d3.stackOffsetNone);
-    
-        const series = stack(data);
-    
-        const x = d3.scaleBand()
-            .domain(data.map(d => d.category))
-            .range([0, width])
-            .padding(0.1);
-    
-        const y = d3.scaleLinear()
-            .domain([0, d3.max(series, d => d3.max(d, d => d[1]))])
-            .nice()
-            .range([height, 0]);
-    
-        const color = d3.scaleOrdinal(d3.schemeCategory10);
-    
-        // Create bars
-        svg.selectAll(".serie")
-            .data(series)
-            .enter().append("g")
-            .attr("class", "serie")
-            .attr("fill", d => colorScale(d.key))
-            .selectAll("rect")
-            .data(d => d)
-            .enter().append("rect")
-            .attr("x", d => x(d.data.category))
-            .attr("y", d => y(d[1]))
-            .attr("height", d => y(d[0]) - y(d[1]))
-            .attr("width", x.bandwidth());
-    
-        // X-axis
-        svg.append("g")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x));
-    
-        // Y-axis
-        svg.append("g")
-            .call(d3.axisLeft(y));
-    
-        // Add title
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", -10)
-            .attr("text-anchor", "middle")
-            .attr("font-size", "16px")
-            .attr("font-weight", "bold")
-            .style("fill", "white")
-            .text(title);
-    
-        // Legend
-        const legend = svg.append("g")
-            .attr("transform", `translate(${width - 10}, 0)`);
-    
-        legend.selectAll("rect")
-            .data(categories)
-            .enter().append("rect")
-            .attr("x", 0)
-            .attr("y", (d, i) => i * 20)
-            .attr("width", 18)
-            .attr("height", 18)
-            .attr("fill", colorScale);
-    
-        legend.selectAll("text")
-            .data(categories)
-            .enter().append("text")
-            .attr("x", 24)
-            .attr("y", (d, i) => i * 20 + 9)
-            .attr("dy", "0.35em")
-            .attr("text-anchor", "start")
-            .attr("font-size", "12px")
-            .attr("fill", "white")
-            .text(d => d);
-    }
-    */
 
     function createPieChart(data, selector, title) {
         const width = d3.select(selector).node().getBoundingClientRect().width; // Use the container's width
