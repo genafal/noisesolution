@@ -1,9 +1,6 @@
 console.log("Script is running");
-
 document.addEventListener("DOMContentLoaded", function () {
-
     console.log("DOM fully loaded and parsed");
-
     d3.csv("data.csv").then(function (data) {
         console.log("Loaded Data:", data); // Check if data is loaded correctly
 
@@ -14,94 +11,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Define custom orders for each axis category
     const orders = {
         "age_group": ["Age 4-9", "Age 10-12", "Age 13-15", "Age 16-19", "Age 20-24", "Age 25+", "Unknown"],
-        "location": ["St. Albans", "Bath", "Cambridge", "Chelmsford", "Colchester", "Ipswich", "Milton Keynes", "London", "Norwich", "Peterborough", "Romford", "Stevenage"],
+        "location": ["Bath", "Bournemouth", "Cambridge", "Chelmsford", "Colchester", "Ipswich", "Milton Keynes", "Lincoln", "London", "Norwich", "Peterborough", "Romford", "St. Albans", "Salisbury", "Stevenage"],
         "ethnicity": ["Asian", "Black", "White", "Mixed", "Declined to say", "Unknown"],
-        "gender": ["Female", "Male", "Other", "Unknown"],
+        "gender": ["Female", "Male", "Other", "Declined to say", "Unknown"],
         "participant_industry": ["Education", "Local Government", "Mental Health", "Other", "Unknown"],
         "has_external_interaction": ["Yes", "No"]
     };
 
     // Add the tooltip selection
     const tooltip = d3.select("#tooltip");
-
-    // Function for the average score visualization
-    
-    function averageScoreVisualization(data) {
-        // Extract unique values for dropdowns
-        const ageGroups = [...new Set(data.map(d => d.age_group))];
-        const locations = [...new Set(data.map(d => d.location))];
-        const ethnicities = [...new Set(data.map(d => d.ethnicity))];
-        const genders = [...new Set(data.map(d => d.gender))];
-
-        // Log the unique values for debugging
-        console.log("Age Groups:", ageGroups);
-        console.log("Locations:", locations);
-        console.log("Ethnicities:", ethnicities);
-        console.log("Genders:", genders);
-
-        // Populate the dropdown options for age-group, location, ethnicity, and gender
-        d3.select("#age-group")
-            .selectAll("option")
-            .data(ageGroups)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        d3.select("#location")
-            .selectAll("option")
-            .data(locations)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        d3.select("#ethnicity")
-            .selectAll("option")
-            .data(ethnicities)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        d3.select("#gender")
-            .selectAll("option")
-            .data(genders)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        function updateAverageScore() {
-            const selectedAgeGroup = d3.select("#age-group").property("value");
-            const selectedLocation = d3.select("#location").property("value");
-            const selectedEthnicity = d3.select("#ethnicity").property("value");
-            const selectedGender = d3.select("#gender").property("value");
-
-            // Log selected filter values
-            console.log("Selected Age Group:", selectedAgeGroup);
-            console.log("Selected Location:", selectedLocation);
-            console.log("Selected Ethnicity:", selectedEthnicity);
-            console.log("Selected Gender:", selectedGender);
-
-            const filteredData = data.filter(d =>
-                d.age_group === selectedAgeGroup &&
-                d.location === selectedLocation &&
-                d.ethnicity === selectedEthnicity &&
-                d.gender === selectedGender
-            );
-
-            // Log filtered data for debugging
-            console.log("Filtered Data:", filteredData);
-
-            const avgScoreChange = d3.mean(filteredData, d => d.score_change);
-            d3.select("#avg-score").text(avgScoreChange ? avgScoreChange.toFixed(2) : "No data");
-        }
-
-        d3.selectAll("select").on("change", updateAverageScore);
-
-        updateAverageScore();
-    } 
 
     // Function for the scatter plot visualization
     function scatterPlotVisualization(data) {
@@ -120,42 +38,44 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Y-Axis Dropdown Element:", yAxisDropdown);
         }
 
-
         // Set up dimensions and SVG container
         const svg = d3.select("svg"),
-              margin = { top: 20, right: 30, bottom: 40, left: 150 },
+              margin = { top: 20, right: 30, bottom: 80, left: 150 },
               width = svg.attr("width") - margin.left - margin.right,
               height = svg.attr("height") - margin.top - margin.bottom,
               g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-        // Log the dropdown elements to check if they exist
-        console.log("X-Axis Dropdown:", d3.select("#x-axis").node());
-        console.log("Y-Axis Dropdown:", d3.select("#y-axis").node());
 
         // Append axis groups within this function
         g.append("g").attr("class", "x-axis").attr("transform", `translate(0,${height})`);
         g.append("g").attr("class", "y-axis");
 
         // Create dropdown options for scatter plot axes
-        const categoricalColumns = ["age_group", "gender", "ethnicity", "location", "participant_industry", "has_external_interaction"];
+        // const categoricalColumns = ["age_group", "gender", "ethnicity", "location", "participant_industry", "has_external_interaction"];
+        const categoricalColumns = [
+            ["Age Group", "age_group"], 
+            ["Gender", "gender"], 
+            ["Ethnicity", "ethnicity"], 
+            ["Location", "location"], 
+            ["Participant Industry", "participant_industry"], 
+            ["Has External Interaction", "has_external_interaction"]
+        ];
 
         categoricalColumns.forEach((col, index) => {
-            console.log("Adding option to dropdowns:", col); // Log each column as it is added
-            d3.select("#x-axis").append("option").text(col).attr("value", col).property("selected", index === 0);
-            d3.select("#y-axis").append("option").text(col).attr("value", col).property("selected", index === 1);
+            d3.select("#x-axis").append("option").text(col[0]).attr("value", col[1]).property("selected", index === 0);
+            d3.select("#y-axis").append("option").text(col[0]).attr("value", col[1]).property("selected", index === 1);
         });
 
         let xAxisCategory = d3.select("#x-axis").property("value");
         let yAxisCategory = d3.select("#y-axis").property("value");
 
         // Set up scales
-        let xScale = d3.scaleBand().range([0, width]).padding(0.1);
-        let yScale = d3.scaleBand().range([height, 0]).padding(0.1);
+        // // force as much space as possible between the bands to minimize cluster overlap
+        // let xScale = d3.scaleBand().range([0, width]).paddingInner(0.3).padding(0.05);
+        // let yScale = d3.scaleBand().range([height, 0]).paddingInner(0.3).padding(0.05);
         const colorScale = d3.scaleOrdinal()
             .domain(["Positive", "No change", "Negative"])
             .range(["#beff00", "#4F9DE0", "#6C44CC"]);
-            //.range(["#beff00", "#0c79d5", "#8755ff"]);
-        const sizeScale = d3.scaleLinear().range([2, 10]); // Scale for circle sizes
+        const sizeScale = d3.scaleLinear().range([3, 10]); // Scale for circle sizes
 
         // Add a color legend based on the change_reported column
         const legendData = colorScale.domain(); // ["Positive", "No change", "Negative"]
@@ -186,38 +106,115 @@ document.addEventListener("DOMContentLoaded", function () {
         function updateScatterPlot() {
             xAxisCategory = d3.select("#x-axis").property("value");
             yAxisCategory = d3.select("#y-axis").property("value");
-        
+
+            // Log the selected axis categories
+            console.log("Selected X-Axis Category:", xAxisCategory);
+            console.log("Selected Y-Axis Category:", yAxisCategory);
+
+            // Log the custom order retrieved from orders
+            console.log("X-Axis Custom Order:", orders[xAxisCategory]);
+            console.log("Y-Axis Custom Order:", orders[yAxisCategory]);
+
+            let xRangeValues = [];
+            let yRangeValues = [];
+
+            // Calculate xRangeValues
+            orders[xAxisCategory].forEach((xCategory,i) => {
+                // set a minimum amount for the width of each category
+                let maxX = 82;
+                orders[yAxisCategory].forEach(yCategory => {
+                    // find the number of data points in each coordinate group
+                    let subgroup = data.filter(d => d[yAxisCategory] === yCategory && d[xAxisCategory] === xCategory)
+                    if (subgroup.length > 0) {
+                        // express the group as a percentage of the width based on the proportion of points
+                        let x = (subgroup.length/data.length) * width
+                        // check if this group is larger than our minimum or larger than previous groups
+                        //maxX = maxX < x ? x : maxX;
+                        maxX = Math.max(maxX, x);
+                    }
+                })
+                // calculate the width, start pixels, center pixels, and end pixels for each category
+                let pushValue = {width: maxX, end: i === 0 ? maxX : maxX + xRangeValues[i-1].end};
+                pushValue.start = pushValue.end - pushValue.width;
+                pushValue.center = pushValue.start + (pushValue.width/2);
+                xRangeValues.push(pushValue);
+            });
+
+            orders[yAxisCategory].forEach((yCategory,i) => {
+                let maxY = 82;
+                orders[xAxisCategory].forEach(xCategory => {
+                    let subgroup = data.filter(d => d[yAxisCategory] === yCategory && d[xAxisCategory] === xCategory)
+                    if (subgroup.length > 0) {
+                        let y = (subgroup.length/data.length) * height
+                        //maxY = maxY < y ? y : maxY;
+                        maxY = Math.max(maxY, y);
+                    }
+                })
+                let pushValue = {width: maxY, end: i === 0 ? maxY : maxY + yRangeValues[i-1].end};
+                pushValue.start = pushValue.end - pushValue.width;
+                pushValue.center = pushValue.start + (pushValue.width/2);
+                yRangeValues.push(pushValue);
+            })
+            // adjust the final dimensions of the svg to fit the data grid
+            const finalWidth = xRangeValues.map(m => m.width).reduce((p, a) => p + a);
+            const finalHeight = yRangeValues.map(m => m.width).reduce((p, a) => p + a);
+            svg.attr("width", finalWidth + margin.left + margin.right)
+            svg.attr("height", finalHeight + margin.top + margin.bottom)
+
             // Apply custom order for x-axis and y-axis
-            xScale.domain(orders[xAxisCategory]);
-            yScale.domain(orders[yAxisCategory]);
+            // base the scale breaks on the centers for each category
+            let xScale = d3.scaleOrdinal()
+                .range(xRangeValues.map(d => d.center))
+                .domain(orders[xAxisCategory]);
+
+            let yScale = d3.scaleOrdinal()
+                .range(yRangeValues.map(d => d.center).reverse())
+                .domain(orders[yAxisCategory].reverse()); // reverse if you want your prescribed order to read top to bottom
+                //.domain(orders[yAxisCategory]); // No need to reverse the domain; only the range
+
+            // Ensure y-axis only updates when y-axis dropdown changes
+            d3.select("#x-axis").on("change", function() {
+                xAxisCategory = this.value;
+                console.log("X-axis updated to:", xAxisCategory);
+                xScale.domain(orders[xAxisCategory]);
+                updateScatterPlot(); // Re-run the function to update x-axis
+            });
+
+            d3.select("#y-axis").on("change", function() {
+                yAxisCategory = this.value;
+                console.log("Y-axis updated to:", yAxisCategory);
+                yScale.domain(orders[yAxisCategory]);
+                yScale.range(yRangeValues.map(d => d.center).reverse()); // Ensure y-axis is reversed correctly on change
+                updateScatterPlot(); // Re-run the function to update y-axis
+            });
+
             sizeScale.domain([0, d3.max(data, d => d.size_of_change)]);
+
+            // Additional logs after creating scales
+            console.log("Sample X Scale Value:", xScale(data[0][xAxisCategory]));
+            console.log("Sample Y Scale Value:", yScale(data[0][yAxisCategory]));
 
             // Initialize the force simulation
             const simulation = d3.forceSimulation(data)
-            .force("x", d3.forceX(d => xScale(d[xAxisCategory]) + xScale.bandwidth() / 2).strength(1))
-            .force("y", d3.forceY(d => yScale(d[yAxisCategory]) + yScale.bandwidth() / 2).strength(1))
+            .force("x", d3.forceX(d => xScale(d[xAxisCategory])).strength(1))
+            .force("y", d3.forceY(d => yScale(d[yAxisCategory])).strength(1))
             .force("collide", d3.forceCollide(d => sizeScale(d.size_of_change) + 1)) // Fine-tune the collision radius
-            .stop();
 
             // Run the simulation for a fixed number of iterations to ensure stability
             for (let i = 0; i < 300; i++) simulation.tick();
 
             // Bind data to circles
-            const circles = g.selectAll("circle").data(data);
-        
-            circles.enter().append("circle")
-                .merge(circles)
+            g.selectAll("circle")
+                .data(data)
+                .join("circle")
                 .attr("cx", d => d.x)
                 .attr("cy", d => d.y)
-                .attr("r", d => {
-                    const radius = sizeScale(d.size_of_change);
-                    return radius === 0 ? 2 : radius; // Ensure a minimum radius of 2 for size_of_change = 0
-                })
+                .attr("r", d => sizeScale(d.size_of_change))
                 .attr("fill", d => colorScale(d.change_reported))
                 .attr("stroke", "#333")
                 .attr("opacity", 0.9)
                 .on("mouseover", function(event, d) {
-                    tooltip.transition().duration(200).style("opacity", 0.7);
+                    tooltip.transition().duration(200).style("opacity", 1);
                     tooltip.html(`
                     <strong>Size of Change:</strong> ${d.size_of_change}<br>
                     <strong>Age Group:</strong> ${d.age_group}<br>
@@ -238,19 +235,24 @@ document.addEventListener("DOMContentLoaded", function () {
                     tooltip.transition().duration(500).style("opacity", 0);
                 });
 
-            circles.exit().remove();
-        
+            // the enter/append/merge/exit methodology is old d3
+            // using join is the current preferred method
+
             // Update the axis groups after creation
             if (g.select(".x-axis").node()) {
-                g.select(".x-axis").call(d3.axisBottom(xScale)).attr("transform", `translate(0,${height})`);
+                g.select(".x-axis").call(d3.axisBottom(xScale)).attr("transform", `translate(0,${finalHeight})`);
+                // use very faint gridlines to help the eye connect the intersecting categories for each group
+                g.selectAll(".x-axis .tick line").attr("y2", -finalHeight).style("opacity", .5).style("stroke-width", .5);
             }
-        
+
             if (g.select(".y-axis").node()) {
                 g.select(".y-axis").call(d3.axisLeft(yScale));
+                g.selectAll(".y-axis .tick line").attr("x2", finalWidth).style("opacity", .5).style("stroke-width", .5);
             }
-            
+            // remove the domain lines for both axes
+            g.selectAll("path.domain").remove();
         }
-        
+
 
         // Initial render of the scatter plot
         updateScatterPlot();
@@ -266,6 +268,5 @@ document.addEventListener("DOMContentLoaded", function () {
             updateScatterPlot();
         });
     }
-
 
 });

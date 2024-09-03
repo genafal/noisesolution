@@ -1,243 +1,235 @@
-console.log("Script is running");
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM fully loaded and parsed");
-    d3.csv("data.csv").then(function (data) {
-        console.log("Loaded Data:", data); // Check if data is loaded correctly
+// this is a nice solution! :D 
+const orders = {
+    "age_group": ["Age 4-9", "Age 10-12", "Age 13-15", "Age 16-19", "Age 20-24", "Age 25+", "Unknown"],
+    "location": ["St. Albans", "Bath", "Cambridge", "Chelmsford", "Colchester", "Ipswich", "Milton Keynes", "London", "Norwich", "Peterborough", "Romford", "Stevenage"],
+    "ethnicity": ["Asian", "Black", "White", "Mixed", "Declined to say", "Unknown"],
+    "gender": ["Female", "Male", "Other", "Unknown"]
+};
 
-        // Run visualization after defining it
-        averageScoreVisualization(data); 
+d3.csv("data.csv").then(function (data) {
+    console.log("Loaded Data:", data);
 
-        // Calculate and display the highest average score change
-        calculateHighestAverageScoreChange(data);
+    // Define a mutable holding place for filtered data indices
+    let filteredData = [];
 
-        // Calculate and display the lowest average score change
-        calculateLowestAverageScoreChange(data);
+    const margin = { top: 50, right: 10, bottom: 10, left: 10 },
+        svgWidth = 1000,
+        svgHeight = 600,
+        width = svgWidth - margin.left - margin.right,
+        height = svgHeight - margin.top - margin.bottom;
 
-        // Group data by age group for the beeswarm plot
-        plotBeeswarm(data);
+    const svg = d3.select("#beeswarm-chart-container svg")
+        .attr("width", svgWidth)
+        .attr("height", svgHeight)
+        .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
 
+    // Adjust the translation to center the `g` element
+    const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);      
+
+    // these things are data dependent, but not dynamic 
+    // once you have data you can set it and forget it
+    // again, responsiveness would necessitate making these dynamic
+    const xScale = d3.scalePoint()
+        .domain(orders.age_group)
+        .range([0, width])
+        .padding(0.3);
+
+    const yScale = d3.scaleLinear()
+        .domain([d3.min(data, d => +d.score_change), d3.max(data, d => +d.score_change)])
+        .nice()
+        .range([height, 0]);
+
+    g.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .attr("class", "axis")
+        .call(d3.axisBottom(xScale));
+
+    g.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(yScale));
+
+    // Append a dotted line at y = 0
+    g.append("line")
+    .attr("x1", 0)
+    .attr("x2", width)
+    .attr("y1", yScale(0))
+    .attr("y2", yScale(0))
+    .attr("stroke", "#beff00")
+    .attr("stroke-width", 1)
+    .attr("stroke-dasharray", "4,4"); // Creates the dotted effect
+
+    const simulation = d3.forceSimulation(data)
+        .force("x", d3.forceX(d => xScale(d.age_group)).strength(0.1))
+        .force("y", d3.forceY(d => yScale(+d.score_change)).strength(0.8))
+        .force("collide", d3.forceCollide(5))
+        .stop();
+
+    for (let i = 0; i < 300; i++) simulation.tick();
+
+    plotBeeswarm(data);
+
+    // Log the bounding box dimensions
+    const bbox = g.node().getBBox();
+    console.log("Bounding Box of g:", bbox);
+
+    // Adjust the transformation if needed
+    const xOffset = (svgWidth - bbox.width) / 2;
+    const yOffset = (svgHeight - bbox.height) / 2;
+    
+    g.attr("transform", `translate(${xOffset - bbox.x},${yOffset - bbox.y})`);
+
+    // since you are performing the same function with the same input
+    // regardless of which dropdown is selected you don't need to apply 
+    // the event listener individually. 
+    d3.selectAll(".dropdown").on("change", () => cascadeDropdowns(data));
+
+    d3.select("#clear-button").on("click", function () {
+        filteredData = [];
+        clearSelections(data);
     });
 
-    // Define custom orders for each axis category
-    const orders = {
-        "age_group": ["Age 4-9", "Age 10-12", "Age 13-15", "Age 16-19", "Age 20-24", "Age 25+", "Unknown"],
-        "location": ["St. Albans", "Bath", "Cambridge", "Chelmsford", "Colchester", "Ipswich", "Milton Keynes", "London", "Norwich", "Peterborough", "Romford", "Stevenage"],
-        "ethnicity": ["Asian", "Black", "White", "Mixed", "Declined to say", "Unknown"],
-        "gender": ["Female", "Male", "Other", "Unknown"],
-        "participant_industry": ["Education", "Local Government", "Mental Health", "Other", "Unknown"],
-        "has_external_interaction": ["Yes", "No"]
-    };
+    cascadeDropdowns(data);
 
-    // Add the tooltip selection
-    const tooltip = d3.select("#tooltip");
+    function cascadeDropdowns(data) {
 
-    // Function for the average score visualization
-    function averageScoreVisualization(data) {
+        const selectedAgeGroup = d3.select("#age-group").property("value");
+        const selectedLocation = d3.select("#location").property("value");
+        const selectedEthnicity = d3.select("#ethnicity").property("value");
+        const selectedGender = d3.select("#gender").property("value");
 
-        // Extract unique values for dropdowns
-        const ageGroups = [...new Set(data.map(d => d.age_group))].sort((a, b) => orders.age_group.indexOf(a) - orders.age_group.indexOf(b));
-        const locations = [...new Set(data.map(d => d.location))].sort((a, b) => orders.location.indexOf(a) - orders.location.indexOf(b));
-        const ethnicities = [...new Set(data.map(d => d.ethnicity))].sort((a, b) => orders.ethnicity.indexOf(a) - orders.ethnicity.indexOf(b));
-        const genders = [...new Set(data.map(d => d.gender))].sort((a, b) => orders.gender.indexOf(a) - orders.gender.indexOf(b));
+        // use slice to make a copy of the data here so you don't unintentionally 
+        // mutate your original data, since you'll still need the original dataset
+        // to replot the beeswarm on every filter change
+        let currentData = data.slice();
 
-        // Log the unique values for debugging
-        console.log("Age Groups:", ageGroups);
-        console.log("Locations:", locations);
-        console.log("Ethnicities:", ethnicities);
-        console.log("Genders:", genders);
-
-        // Populate the dropdown options for age-group, location, ethnicity, and gender
-        d3.select("#age-group")
-            .selectAll("option")
-            .data(ageGroups)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        d3.select("#location")
-            .selectAll("option")
-            .data(locations)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        d3.select("#ethnicity")
-            .selectAll("option")
-            .data(ethnicities)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        d3.select("#gender")
-            .selectAll("option")
-            .data(genders)
-            .enter()
-            .append("option")
-            .text(d => d)
-            .attr("value", d => d);
-
-        // Set default values for dropdowns
-        d3.select("#age-group").property("value", "Age 13-15");
-        d3.select("#location").property("value", "Ipswich");
-        d3.select("#ethnicity").property("value", "White");
-        d3.select("#gender").property("value", "Male");
-
-        function updateAverageScore() {
-            const selectedAgeGroup = d3.select("#age-group").property("value");
-            const selectedLocation = d3.select("#location").property("value");
-            const selectedEthnicity = d3.select("#ethnicity").property("value");
-            const selectedGender = d3.select("#gender").property("value");
-
-            // Log selected filter values
-            console.log("Selected Age Group:", selectedAgeGroup);
-            console.log("Selected Location:", selectedLocation);
-            console.log("Selected Ethnicity:", selectedEthnicity);
-            console.log("Selected Gender:", selectedGender);
-
-            const filteredData = data.filter(d =>
-                d.age_group === selectedAgeGroup &&
-                d.location === selectedLocation &&
-                d.ethnicity === selectedEthnicity &&
-                d.gender === selectedGender
-            );
-
-            // Log filtered data for debugging
-            console.log("Filtered Data:", filteredData);
-
-            const avgScoreChange = d3.mean(filteredData, d => d.score_change);
-            d3.select("#avg-score").text(avgScoreChange ? avgScoreChange.toFixed(2) : "No data");
-        
-            
+        if (selectedAgeGroup) {
+            currentData = currentData.filter(d => d.age_group === selectedAgeGroup);
         }
 
-        d3.selectAll("select").on("change", updateAverageScore);
+        if (selectedLocation) {
+            currentData = currentData.filter(d => d.location === selectedLocation);
+        }
 
-        updateAverageScore();
-    } 
+        if (selectedEthnicity) {
+            currentData = currentData.filter(d => d.ethnicity === selectedEthnicity);
+        }
 
-    // Function to calculate and display the highest average score change
-    function calculateHighestAverageScoreChange(data) {
-        // Group data by all four factors
-        const groupedData = d3.group(data, d => d.age_group, d => d.location, d => d.ethnicity, d => d.gender);
+        if (selectedGender) {
+            currentData = currentData.filter(d => d.gender === selectedGender);
+        }
 
-        let highestAvgScore = -Infinity;
-        let bestCombination = {};
+        // apply all filters to the dataset first, then populate the dropdowns 
+        // so the choices in the dropdowns reflect what's currently available. 
+        // this means that some choice combos might remove all the options
+        // so this is an opportunity to think through the UX and what someone
+        // might need or expect to help them through that scenario
+        const locations = [...new Set(currentData.map(d => d.location))]
+            .sort((a, b) => orders.location.indexOf(a) - orders.location.indexOf(b));
+        updateDropdown("#location", locations, selectedLocation);
 
-        // Calculate average score change for each group
-        groupedData.forEach((locationGroup, ageGroup) => {
-            locationGroup.forEach((ethnicityGroup, location) => {
-                ethnicityGroup.forEach((genderGroup, ethnicity) => {
-                    genderGroup.forEach((dataPoints, gender) => {
-                        const avgScore = d3.mean(dataPoints, d => d.score_change);
-                        if (avgScore > highestAvgScore) {
-                            highestAvgScore = avgScore;
-                            bestCombination = { ageGroup, location, ethnicity, gender };
-                        }
-                    });
-                });
-            });
-        });
+        const ethnicities = [...new Set(currentData.map(d => d.ethnicity))]
+            .sort((a, b) => orders.ethnicity.indexOf(a) - orders.ethnicity.indexOf(b));
+        updateDropdown("#ethnicity", ethnicities, selectedEthnicity);
 
-        // Display the highest average score change and the combination that produced it
-        // Display the highest average score change in a sentence
-    d3.select("#highest-avg-score").html(`
-    <p>The highest average score change, <strong>${highestAvgScore.toFixed(2)}</strong>, is observed for ${bestCombination.gender}s, ${bestCombination.ageGroup}, from ${bestCombination.location} (Ethnicity ${bestCombination.ethnicity}).</p>
-    
-        `);
+        const genders = [...new Set(currentData.map(d => d.gender))]
+            .sort((a, b) => orders.gender.indexOf(a) - orders.gender.indexOf(b));
+        updateDropdown("#gender", genders, selectedGender);
+
+        const ages = [...new Set(currentData.map(d => d.age_group))]
+            .sort((a, b) => orders.age_group.indexOf(a) - orders.age_group.indexOf(b));
+        updateDropdown("#age-group", ages, selectedAgeGroup);
+
+        // only populate the global filtered data variable if some filters have been applied
+        // this keeps all the highlights off when all the dropdowns are cleared
+        if (currentData.length < data.length) {
+            filteredData = currentData.map(d => d.index);
+        } else {
+            filteredData = [];
+        }
+        console.log("current data", currentData);
+        console.log("filtered data", filteredData);
+        updateAverageScore(currentData);
+        plotBeeswarm(data);
     }
 
-    // Function to calculate and display the lowest average score change
-    function calculateLowestAverageScoreChange(data) {
-        // Group data by all four factors
-        const groupedData = d3.group(data, d => d.age_group, d => d.location, d => d.ethnicity, d => d.gender);
+    // excellent implementation! :D 
+    function updateDropdown(selector, options, selectedValue) {
+        const dropdown = d3.select(selector);
+        dropdown.selectAll("option").remove();
 
-        let lowestAvgScore = Infinity;
-        let worstCombination = {};
+        dropdown.append("option").attr("value", "").text("Select...");
 
-        // Calculate average score change for each group
-        groupedData.forEach((locationGroup, ageGroup) => {
-            locationGroup.forEach((ethnicityGroup, location) => {
-                ethnicityGroup.forEach((genderGroup, ethnicity) => {
-                    genderGroup.forEach((dataPoints, gender) => {
-                        const avgScore = d3.mean(dataPoints, d => d.score_change);
-                        if (avgScore < lowestAvgScore) {
-                            lowestAvgScore = avgScore;
-                            worstCombination = { ageGroup, location, ethnicity, gender };
-                        }
-                    });
-                });
-            });
-        });
+        dropdown.selectAll("option.option-item")
+            .data(options)
+            .enter()
+            .append("option")
+            .classed("option-item", true)
+            .text(d => d)
+            .attr("value", d => d);
 
-        // Display the lowest average score change in a sentence
-        d3.select("#lowest-avg-score").html(`
-            <p>The lowest average score change, <strong>${lowestAvgScore.toFixed(2)}</strong>, is observed for ${worstCombination.ageGroup} year-old young people from ${worstCombination.location}. (Ethnicity - ${worstCombination.ethnicity}, Gender - ${worstCombination.gender}).</p>
-        `);
+        if (selectedValue && options.includes(selectedValue)) {
+            dropdown.property("value", selectedValue);
+        } else {
+            dropdown.property("value", "");
+        }
+    }
+
+    // this function is now called from inside the cascadeDropdowns function
+    // and receives the filtered dataset to calculate the average
+    // meaning it will update on every change in any dropdown giving you 
+    // the average for any combination of selected filters
+    // and eliminating the need to do the costly filtering process again
+    function updateAverageScore(data) {
+
+        const avgScoreChange = d3.mean(data, d => d.score_change);
+        console.log(avgScoreChange);
+
+        // if the avgScoreChange is 0 you still want to display it
+        // `if (avgScoreChange)` resolves to false if the value is 0
+        if (typeof avgScoreChange === "number") {
+            d3.select("#avg-score").text(avgScoreChange.toFixed(2));
+            d3.select("#result").style("display", "block");
+        } else {
+            d3.select("#avg-score").text("No data");
+        }
+    }
+
+    function clearSelections(data) {
+        d3.select("#age-group").property("value", "");
+        d3.select("#location").property("value", "");
+        d3.select("#ethnicity").property("value", "");
+        d3.select("#gender").property("value", "");
+
+        // repopulate the dropdowns with all the options
+        cascadeDropdowns(data);
+
+        // replotting the dots will have the addon effect of removing the highlight
+        plotBeeswarm(data);
+
+        // updating the average score here will return it to 
+        // the overall average for the entire dataset
+        updateAverageScore(data);
     }
 
     function plotBeeswarm(data) {
-        // Define orders for age groups
-        const ageGroupOrder = ["Age 4-9", "Age 10-12", "Age 13-15", "Age 16-19", "Age 20-24", "Age 25+", "Unknown"];
-
-        // Set up SVG dimensions
-        const margin = { top: 20, right: 30, bottom: 50, left: 50 },
-              width = 1000 - margin.left - margin.right,
-              height = 600 - margin.top - margin.bottom;
-
-        const svg = d3.select("#beeswarm-chart-container svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-
-        // Set up scales
-        const xScale = d3.scalePoint()
-            .domain(ageGroupOrder)
-            .range([0, width])
-            .padding(0.5);
-
-        const yScale = d3.scaleLinear()
-            .domain([d3.min(data, d => +d.score_change), d3.max(data, d => +d.score_change)])
-            .nice()
-            .range([height, 0]);
-
-        // Set up axis
-        const xAxis = d3.axisBottom(xScale);
-        const yAxis = d3.axisLeft(yScale);
-
-        svg.append("g")
-            .attr("transform", `translate(0,${height})`)
-            .call(xAxis);
-
-        svg.append("g")
-            .call(yAxis);
-
-        // Add the beeswarm points
-        const simulation = d3.forceSimulation(data)
-            .force("x", d3.forceX(d => xScale(d.age_group)).strength(1))
-            .force("y", d3.forceY(d => yScale(+d.score_change)))
-            .force("collide", d3.forceCollide(5)) // Adjust the radius to avoid overlaps
-            .stop();
-
-        for (let i = 0; i < 300; i++) simulation.tick(); // Run the simulation
-
-        svg.append("g")
-            .selectAll("circle")
+        // the plot function can use the d3 join method to update the dots every time
+        // the dropdowns change, and use the global variable filteredData to conditionally
+        // apply the highlighted stroke
+        g.selectAll("circle")
             .data(data)
-            .enter()
-            .append("circle")
+            .join("circle")
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .attr("r", 5)
-            .attr("fill", "steelblue")
+            .attr("fill", "#513399")
             .attr("opacity", 0.7)
+            .attr("stroke", d => filteredData.includes(d.index) ? "#beff00" : null)
+            .attr("stroke-width", d => filteredData.includes(d.index) ? 1 : 0)
             .append("title")
-            .text(d => `Age Group: ${d.age_group}\nScore Change: ${d.score_change}`);
+            // the hover text should display everything about the data point, except the age group
+            // which is pretty evident based on the categorical layout of the x axis
+            .text(d => `Location: ${d.location}\nEthnicity: ${d.ethnicity}\nGender: ${d.gender}\nScore Change: ${d.score_change}`);
     }
-    
 });
-
-
