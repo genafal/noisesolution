@@ -1,15 +1,23 @@
 /* Center the graphic container */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
 #container {
     display: flex;
     font-family: 'Montserrat', sans-serif;
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center-align all elements horizontally */
-    justify-content: center; /* Center-align all elements vertically */
+    /* justify-content: center; Center-align all elements vertically */
     gap: 20px; /* Space between each section */
     min-height: 100vh; /* Full viewport height to center vertically */
     text-align: center; /* Centers text and inline elements */
-    padding: 0;
-    margin: 0;
+    margin-top: 50px;  /* 50px buffer from the top */
+    padding: 0 20px;   /* Optional padding for content */
+    box-sizing: border-box;
 }
 
 body {
@@ -230,6 +238,7 @@ svg {
 /* Center the beeswarm chart container */
 #beeswarm-chart-container {
     width: 100%;
+    height: auto;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -237,6 +246,7 @@ svg {
 /* Center the SVG within the container */
 #beeswarm-chart-container svg {
     width: 100%;
+    height: auto;
     display: block;
     margin: 0 auto;
 }
@@ -305,4 +315,12 @@ ul {
 
 .banner-svg {
     height: 50px; /* Adjust SVG size as needed */
+}
+
+.dropdown {
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #555;
+    padding: 5px;
+    font-family: 'Montserrat', sans-serif;
 }
