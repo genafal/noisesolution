@@ -86,6 +86,7 @@ body {
   }
 
   #info-box {
+    font-size: 20px;
     grid-column: 2 / 3;
     padding-bottom: 20px; /* Adjust to match the bar height */
     border-radius: 5px;
@@ -121,5 +122,21 @@ body {
     border-radius: 5px;
     pointer-events: none;
     font-size: 12px;
+  }
+
+  a {
+    font-family: 'Montserrat', sans-serif;
+    color: #beff00; /* Link color */
+    text-decoration: none; /* Remove underline */  
+    font-size: 20px; /* Set font size */
+  }
+
+  a:hover {
+    color: #9979e4; /* Change color on hover */
+    text-decoration: none; /* Remove underline */  
+  }
+
+  p {
+    font-family: 'Montserrat', sans-serif;
   }
   
