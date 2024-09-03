@@ -79,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Add a color legend based on the change_reported column
         const legendData = colorScale.domain(); // ["Positive", "No change", "Negative"]
+
         const legend = d3.select("#legend")
             .append("svg")
             .attr("width", "100%")
@@ -88,10 +89,11 @@ document.addEventListener("DOMContentLoaded", function () {
             .enter()
             .append("g")
             .attr("class", "legend-item")
-            .attr("transform", (d, i) => `translate(${i * 120}, 0)`);
+            .attr("transform", (d, i) => `translate(${i * 160}, 0)`);
+            
 
         legend.append("circle")
-            .attr("cx", 9) // Adjust the x position for the circle's center
+            .attr("cx", 10) // Adjust the x position for the circle's center
             .attr("cy", 19) // Adjust the y position for the circle's center
             .attr("r", 9) // Set the radius of the circle
             .attr("fill", d => colorScale(d));
