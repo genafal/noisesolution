@@ -13,8 +13,8 @@ d3.csv("data.csv").then(function (data) {
     let filteredData = [];
 
     const margin = { top: 50, right: 10, bottom: 10, left: 10 },
-        svgWidth = 1000,
-        svgHeight = 600,
+        svgWidth = 800,
+        svgHeight = 500,
         width = svgWidth - margin.left - margin.right,
         height = svgHeight - margin.top - margin.bottom;
 

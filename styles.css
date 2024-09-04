@@ -13,11 +13,12 @@
     align-items: center; /* Center-align all elements horizontally */
     /* justify-content: center; Center-align all elements vertically */
     gap: 20px; /* Space between each section */
-    min-height: 100vh; /* Full viewport height to center vertically */
+    height: 90vh;
     text-align: center; /* Centers text and inline elements */
-    margin-top: 50px;  /* 50px buffer from the top */
-    padding: 0 20px;   /* Optional padding for content */
+    padding-left: 15%;   /* Optional padding for content */
+    padding-right: 15%;   /* Optional padding for content */
     box-sizing: border-box;
+    border: 1px solid rgb(255, 141, 141); /* Gray border */
 }
 
 body {
@@ -30,7 +31,7 @@ body {
     padding: 0;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    height: 90vh;
 }
 
 /* General text elements */
@@ -85,11 +86,13 @@ select {
 /* Style for the control section */
 .controls {
     margin-bottom: 20px;
-    padding: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
+    width: 70%;
+    padding-left: 15%;   /* Optional padding for content */
+    padding-right: 15%;   /* Optional padding for content */
 }
 
 /* Ensure that labels and dropdowns are visible on the dark background */
