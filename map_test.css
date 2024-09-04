@@ -198,28 +198,3 @@
       vertical-align: bottom; /* Align the SVG itself to the bottom if needed */
   }
 
-  /* Responsive Adjustments */
-@media screen and (max-width: 1024px) {
-  .grid-container {
-      grid-template-columns: 1fr; /* Stack the columns on smaller screens */
-      grid-template-rows: auto auto auto; /* Adjust rows for smaller screens */
-  }
-
-  .map-section {
-      grid-column: 1 / 2; /* Full width for the map on smaller screens */
-      grid-row: 3 / 4;
-  }
-
-  .text-section, .graphs-section {
-      grid-column: 1 / 2; /* Full width for text and graphs on smaller screens */
-  }
-
-  .graphs-section {
-      grid-template-rows: minmax(150px, 1fr) minmax(150px, 1fr); /* Adjust heights */
-  }
-
-  #bar-chart {
-    padding-bottom: 2vh; /* Use viewport height for small screens */
-  }
-}
-
