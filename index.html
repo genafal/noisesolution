@@ -33,30 +33,34 @@
 
         .banner {
             background-color: black;
-            padding-right: 100px; /* Adjust side padding as needed */
-            padding-left: 50px; /* Adjust side padding as needed */
+            padding-right: 10%; /* Adjust side padding as needed */
+            padding-left: 10%; /* Adjust side padding as needed */
             padding-top: 75px;
             display: flex;
             align-items: flex-end; /* Align links to the bottom */
             justify-content: space-between;
-            height: 120px !important; /* Force the height */
+            height: 120px !important; /* Force the height */           
         }
 
         .banner-left {
             display: flex;
-            align-items: flex-end; /* Align SVG to the bottom */
-            padding-left: 50px; 
+            align-items: flex-end; /* Align SVG to the bottom */                     
+        }
+
+        .banner-middle {
+            display: flex;
+            gap: 20px; /* Space between the links */
+            align-items: flex-end; /* Align links to the bottom */
+            padding-bottom: 40px;            
         }
 
         .banner-right {
             display: flex;
-            gap: 20px; /* Space between the links */
-            align-items: flex-end; /* Align links to the bottom */
-            padding-bottom: 40px;
+            align-items: flex-end; /* Align links to the bottom */          
         }
 
         .banner-svg {
-            height: 150px; /* Adjust SVG size as needed */
+            height: 150px; /* Adjust SVG size as needed */           
         }
 
 
@@ -66,14 +70,21 @@
 
     <div class="banner">
         <div class="banner-left">
-            <a href="home.html" target="content-frame">
-                <img src="Noise Solution Logo_CORE - White and Acid Green Duotone.svg" alt="Logo" class="banner-svg">
-            </a>
+                <a href="home.html" target="content-frame">
+                    <img src="Noise Solution Logo_CORE - White and Acid Green Duotone.svg" alt="Logo" class="banner-svg">
+                </a>
         </div>
-        <div class="banner-right">
+
+        <div class="banner-middle">
             <a href="explore.html" target="content-frame">Drill Down to Detail</a>
             <a href="demographic.html" target="content-frame">Demographic Breakdown</a>
             <a href="map.html" target="content-frame">Explore by Region (beta)</a>
+        </div>   
+
+        <div class="banner-right">    
+            <a href="https://www.vizforsocialgood.com" target="_blank">
+                <img src="VFSG logo square for dark background.svg" alt="Logo" class="banner-svg">
+            </a> 
         </div>
     </div>
 
